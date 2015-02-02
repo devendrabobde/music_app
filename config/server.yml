@@ -1,0 +1,19 @@
+development: &dev
+  service_name: "UPSC_APP"
+  server_instance_name: "Development"
+  code_version: 1.0.0
+  tokens_expire_in: 86400 # in seconds
+production:
+  service_name: "UPSC_APP"
+  server_instance_name: "Production"
+  code_version: 1.0.0
+  tokens_expire_in: 86400 # in seconds
+test:
+  <<: *dev
+  server_instance_name: "test"
+cucumber:
+  <<: *dev
+  server_instance_name: "test"
+performance:
+  <<: *dev
+  server_instance_name: "demo"

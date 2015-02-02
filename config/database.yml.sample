@@ -1,0 +1,29 @@
+development:
+  adapter: postgresql
+  encoding: utf8
+  database: api_music_development
+  pool: 5
+  host: localhost
+  username: username
+  password: password
+
+test: &test
+  adapter: postgresql
+  encoding: utf8
+  database: api_music_test
+  pool: 5
+  host: localhost
+  username: username
+  password: password
+
+production:
+  adapter: postgresql
+  encoding: utf8
+  database: api_music_production
+  pool: 5
+  host: localhost
+  username: username
+  password:  password
+
+cucumber:
+  <<: *testk='/usr/bin/gitk'
