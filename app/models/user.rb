@@ -4,27 +4,27 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
 
+  has_many :fb_friends, dependent: :destroy
+  has_many :songs, dependent: :destroy
+  
   before_save :ensure_auth_token
 
   def self.find_for_oauth_api(params)
-  	if params[:email].present?
-  	  user_email = params[:email]
-  	elsif params[:link].present?
-  	  user_email = "#{params[:link].split('/')[-1]}@facebook.com}"
-  	else
-  	  user_email = "#{params[:first_name].downcase}.#{params[:last_name].downcase}@facebook.com"
-  	end
-    user = User.where(provider: params[:provider], uid: params[:uid]).first
+    profile = Koala::Facebook::API.new(params[:facebook_token])
+    fb_user = profile.get_object("me")
+    user_email = fb_user["email"].present? ? fb_user["email"] : "#{fb_user["link"].split('/')[-1]}@facebook.com"
+    user = User.where(provider: params[:provider], uid: profile["id"]).first
     if user
       user
     else
       user = User.where(email: user_email).first
       unless user
         user = User.new(email: user_email, password: Devise.friendly_token[0,20],
-        	first_name: params[:first_name], last_name: params[:last_name],
-        	name: params[:name], uid: params[:uid], provider: params[:provider], image_url: params[:image_url],
-        	date_of_birth: params[:date_of_birth], gender: params[:gender])
+        	first_name: fb_user["first_name"], last_name: fb_user["last_name"],
+        	name: fb_user["name"], uid: fb_user["id"], provider: params[:provider], image_url: profile.get_picture(fb_user["id"]),
+        	date_of_birth: fb_user["birthday"], gender: fb_user["gender"])
         user.save
+        Resque.enqueue(FacebookSync, user, params)
       end
     end
     user
@@ -33,6 +33,19 @@ class User < ActiveRecord::Base
   def ensure_auth_token
     if auth_token.blank?
       self.auth_token = generate_auth_token
+    end
+  end
+
+  def create_fb_friends(graph, friends)
+    friends.each do |friend|
+      self.fb_friends.create(profile_id: friend["id"], profile_url: friend["link"],
+        username: friend["username"].present? ? friend["username"] : friend["link"].split('/')[-1],
+        first_name: friend["first_name"], last_name: friend["last_name"], name: friend["name"], gender: friend["gender"],
+        email: friend["email"].present? ? friend["email"] : "#{friend["link"].split('/')[-1]}@facebook.com",
+        location: (friend["location"]["name"] rescue ""), hometown: (friend["hometown"]["name"] rescue ""),
+        birthday: (friend["birthday"] rescue nil),
+        image_url: graph.get_picture(friend["id"]) rescue nil)
+      )
     end
   end
  

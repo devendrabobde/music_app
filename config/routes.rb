@@ -6,6 +6,8 @@ Rails.application.routes.draw do
       resources :users, only: :index, defaults: { format: :json } do
       	collection do
       	  post :login
+          post :post_songs
+          get :get_songs
       	  delete :logout
       	end
       end

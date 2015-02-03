@@ -29,4 +29,26 @@ class Api::V2::UsersController < ApplicationController
     end
   end
 
+  def post_songs
+    user = User.find_by_id(params[:user_id])
+    if user
+      params[:songs].each do |song|
+        user.songs.create(name: song)
+      end
+      render json: { status: 200, message: "Songs saved successfully" }
+    else
+      render json: { status: 401, message: "User not found" }
+    end
+  end
+
+  def get_songs
+    user = User.find_by_id(params[:user_id])
+    if user
+      songs = user.songs.present? ? user.songs : []
+      render json: { status: 200, message: songs }
+    else
+      render json: { status: 401, message: "User not found" }
+    end
+  end
+
 end

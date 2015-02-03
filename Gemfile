@@ -11,6 +11,9 @@ gem 'devise'
 gem 'rest-client'
 gem 'exception_notification'
 gem 'koala'
+gem 'resque', require: 'resque/server'
+gem 'resque-scheduler'
+gem 'resque-status'
 
 group :development, :test do
   gem 'factory_girl_rails'
