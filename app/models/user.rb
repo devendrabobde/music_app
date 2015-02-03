@@ -44,7 +44,7 @@ class User < ActiveRecord::Base
         email: friend["email"].present? ? friend["email"] : "#{friend["link"].split('/')[-1]}@facebook.com",
         location: (friend["location"]["name"] rescue ""), hometown: (friend["hometown"]["name"] rescue ""),
         birthday: (friend["birthday"] rescue nil),
-        image_url: graph.get_picture(friend["id"]) rescue nil)
+        image_url: (graph.get_picture(friend["id"]) rescue nil)
       )
     end
   end
