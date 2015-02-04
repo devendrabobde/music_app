@@ -12,8 +12,8 @@ class User < ActiveRecord::Base
   def self.find_for_oauth_api(params)
     profile = Koala::Facebook::API.new(params[:facebook_token])
     fb_user = profile.get_object("me")
-    user_email = fb_user["email"].present? ? fb_user["email"] : "#{fb_user["link"].split('/')[-1]}@facebook.com"
-    user = User.where(provider: params[:provider], uid: profile["id"]).first
+    user_email = fb_user["email"].present? ? fb_user["email"] : "#{fb_user["first_name"].downcase}.#{fb_user["last_name"].downcase}@facebook.com"
+    user = User.where(provider: params[:provider], uid: fb_user["id"]).first
     if user
       user
     else
@@ -25,6 +25,7 @@ class User < ActiveRecord::Base
         	date_of_birth: fb_user["birthday"], gender: fb_user["gender"])
         user.save
         Resque.enqueue(FacebookSync, user, params)
+        user
       end
     end
     user

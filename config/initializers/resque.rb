@@ -4,5 +4,5 @@ require 'resque' # include resque so we can configure it
 require 'resque-scheduler'
 require 'resque/scheduler/server'
 
-Resque.redis = Redis.new(:host => "secure-dusk-5988.herokuapp.com", :port => 6379, :password => nil)
+Resque.redis = Redis.new(:host => "127.0.0.1", :port => 6379, :password => nil)
 Resque.redis.namespace = "resque:music_app"

@@ -45,7 +45,7 @@ class Api::V1::UsersController < ApplicationController
     user = User.find_by_id(params[:user_id])
     if user
       songs = user.songs.present? ? user.songs : []
-      render json: { status: 200, message: songs }
+      render json: { status: 200, message: "Songs Found", songs: songs }
     else
       render json: { status: 401, message: "User not found" }
     end
