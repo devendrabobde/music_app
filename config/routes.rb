@@ -9,6 +9,7 @@ Rails.application.routes.draw do
       	  post :login
           post :post_songs
           get :get_songs
+          get :get_friends
       	  delete :logout
       	end
       end

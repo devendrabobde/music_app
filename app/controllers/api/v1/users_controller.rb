@@ -51,4 +51,14 @@ class Api::V1::UsersController < ApplicationController
     end
   end
 
+  def get_friends
+    user = User.find_by_id(params[:user_id])
+    if user
+      friends = user.fb_friends.present? ? user.fb_friends : []
+      render json: { status: 200, message: "Friends Found", songs: friends }
+    else
+      render json: { status: 401, message: "User not found" }
+    end
+  end
+
 end
