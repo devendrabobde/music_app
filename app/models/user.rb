@@ -10,6 +10,7 @@ class User < ActiveRecord::Base
   before_save :ensure_auth_token
 
   def self.find_for_oauth_api(params)
+    all_friends = []
     profile = Koala::Facebook::API.new(params[:facebook_token])
     fb_user = profile.get_object("me")
     user_email = fb_user["email"].present? ? fb_user["email"] : "#{fb_user["first_name"].downcase}.#{fb_user["last_name"].downcase}@facebook.com"
@@ -24,7 +25,12 @@ class User < ActiveRecord::Base
         	name: fb_user["name"], uid: fb_user["id"], provider: params[:provider], image_url: profile.get_picture(fb_user["id"]),
         	date_of_birth: fb_user["birthday"], gender: fb_user["gender"])
         user.save
-        Resque.enqueue(FacebookSync, user, params)
+        friends = profile.get_connections("me", "friends", fields: "name, gender, first_name, last_name, location, hometown, birthday, link") rescue []
+        begin
+          all_friends += friends
+        end while friends = friends.next_page
+        user.create_fb_friends(profile, all_friends) unless all_friends.blank?
+        # Resque.enqueue(FacebookSync, user, params)
         user
       end
     end
